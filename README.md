@@ -1,1 +1,1 @@
-# midasit_tgc_web_dev_db
+# Rust Study 용
