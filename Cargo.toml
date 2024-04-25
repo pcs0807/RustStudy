@@ -1,5 +1,5 @@
 [package]
-name = "midasit_tgc_web_dev_db"
+name = "RustStudy"
 version = "0.1.0"
 edition = "2021"
 
