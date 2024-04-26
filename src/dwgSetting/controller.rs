@@ -11,7 +11,6 @@ pub struct QueryParams {
 pub async fn get_dwgSettings(data: web::Data<mysql::Pool>, query_params: web::Query<QueryParams>) -> actix_web::Result<impl Responder> {
     let column = query_params.sortRule.clone();
     let order = query_params.asc;
-
     let dwgSettings = web::block(move || service::get_all_dwgSetting(&data, column, order)).await??;
     Ok(web::Json(dwgSettings))
 }
@@ -19,11 +18,10 @@ pub async fn get_dwgSettings(data: web::Data<mysql::Pool>, query_params: web::Qu
 #[post("/dwgSettings")]
 pub async fn post_dwgSettings(
     data: web::Data<mysql::Pool>,
-    dwgsetting: web::Json<crate::dwgSetting::dto::dwgSetting::Setting>,
+    uploadSet: web::Json<crate::dwgSetting::dto::dwgSetting::UploadSetting>,
 ) -> actix_web::Result<impl Responder> {
-    web::block(move || service::create_dwgSetting(&data, dwgsetting.into_inner())).await??;
+    web::block(move || service::create_dwgSetting(&data, uploadSet.into_inner())).await??;
     Ok(HttpResponse::Created())
-    
 }
 
 #[put("/dwgSettings")]
@@ -33,7 +31,6 @@ pub async fn put_dwgSettings(
 ) -> actix_web::Result<impl Responder> {
     web::block(move || service::put_dwgSetting(&data, keynum)).await??;
     Ok(HttpResponse::Created())
-    
 }
 
 #[delete("/dwgSettings")]

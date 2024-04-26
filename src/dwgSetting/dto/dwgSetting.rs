@@ -10,3 +10,11 @@ pub struct Setting {
     pub instim: String,
     pub cnltim: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UploadSetting {
+    pub title: String,
+    pub description: String,
+    pub dwg: String,
+    pub json: String,
+}
