@@ -37,7 +37,7 @@ pub fn select_settings(conn: &mut mysql::PooledConn, column: String, order: bool
                     INNER JOIN fileinfo 
                     ON dwgFileKey = fileKey 
                     AND fileCancel = 0 
-                    WHERE dwgCancel = 0 LIMIT 1) AS dwgFile 
+                    WHERE dwgCancel = 0) AS dwgFile 
             ON dwgsetting.dwgFilekey = dwgFile.fileKey 
             INNER JOIN 
                 (SELECT 
@@ -48,7 +48,7 @@ pub fn select_settings(conn: &mut mysql::PooledConn, column: String, order: bool
                     INNER JOIN fileinfo 
                     ON jsonFilekey = fileKey 
                     AND fileCancel = 0 
-                    WHERE dwgCancel = 0 LIMIT 1) AS jsonFile 
+                    WHERE dwgCancel = 0) AS jsonFile 
             ON dwgsetting.jsonFilekey = jsonFile.fileKey
         WHERE dwgcancel = 0
         ORDER BY {};
@@ -74,16 +74,12 @@ pub fn post_dwgSetting(
     conn: &mut mysql::PooledConn,
     title: String,
     description: String,
+    dwgName: String,
+    jsonName: String,
 ) -> mysql::error::Result<()> {
-    conn.exec_drop(
-        r"
-        INSERT INTO `drawingautomation`.`DwgSetting` (dwgTitle, dwgDescription) VALUES (:dwgTitle, :dwgDescription);
-        ",
-        params! {
-            "dwgTitle" => title,
-            "dwgDescription" => description,
-        },
-    )
+    // 여러번의 쿼리 동시 실행으로 DB 프로시저로 따로 빼둠 [CREATE_DWGSETTING]
+    let query = "CALL CREATE_DWGSETTING(?, ?, ?, ?)";
+    conn.exec_drop(query, (dwgName, jsonName, title, description))
 }
 
 

@@ -1,5 +1,6 @@
 use crate::db::dwgSetting::*;
 use crate::dwgSetting::dto::dwgSetting::Setting;
+use crate::dwgSetting::dto::dwgSetting::UploadSetting;
 use crate::dwgSetting::dto::response::dwgSettingsResponseData;
 
 use actix_web::http::StatusCode;
@@ -38,9 +39,9 @@ pub fn get_all_dwgSetting(pool: &mysql::Pool, column: String, order: bool) -> Re
     })
 }
 
-pub fn create_dwgSetting(pool: &mysql::Pool, dwgsetting: Setting) -> Result<(), dwgSettingError> {
+pub fn create_dwgSetting(pool: &mysql::Pool, uploadSet: UploadSetting) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::post_dwgSetting(&mut conn, dwgsetting.title, dwgsetting.description)?;
+    query::post_dwgSetting(&mut conn, uploadSet.title, uploadSet.description, uploadSet.dwg, uploadSet.json)?;
     Ok(())
 }
 
