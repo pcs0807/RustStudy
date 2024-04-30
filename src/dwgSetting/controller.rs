@@ -20,6 +20,14 @@ pub async fn get_dwgSettings(data: web::Data<mysql::Pool>, query_params: web::Qu
     Ok(web::Json(dwgSettings))
 }
 
+
+#[get("/dwgSettings/{keynum}")]
+pub async fn get_dwgSetting(data: web::Data<mysql::Pool>,key: web::Path<String>) -> actix_web::Result<impl Responder> {
+    let id = key.into_inner();
+    let dwgSettings = web::block(move || service::get_dwgSetting(&data, id)).await??;
+    Ok(web::Json(dwgSettings))
+}
+
 #[post("/dwgSettings")]
 pub async fn post_dwgSettings(
     data: web::Data<mysql::Pool>,
