@@ -77,7 +77,6 @@ pub fn post_dwgSetting(
     dwgName: String,
     jsonName: String,
 ) -> mysql::error::Result<()> {
-    // 여러번의 쿼리 동시 실행으로 DB 프로시저로 따로 빼둠 [CREATE_DWGSETTING]
     let query = "CALL CREATE_DWGSETTING(?, ?, ?, ?)";
     conn.exec_drop(query, (dwgName, jsonName, title, description))
 }
@@ -85,16 +84,13 @@ pub fn post_dwgSetting(
 
 pub fn put_dwgSetting(
     conn: &mut mysql::PooledConn,
-    dwgkeynum : String,
+    key : String,
+    title : String,
+    description : String,
+    result : i32,
 ) -> mysql::error::Result<()> {
-    conn.exec_drop(
-        r"
-        INSERT INTO `drawingautomation`.`DwgSetting` (dwgTitle, dwgDescription) VALUES (:dwgTitle, :dwgDescription);
-        ",
-        params! {
-            "dwgTitle" => dwgkeynum,
-        },
-    )
+    let query = "CALL UPDATE_DWGSETTING(?, ?, ?, ?)";
+    conn.exec_drop(query, (key, title, description, result))
 }
 
 pub fn delete_dwgSetting(

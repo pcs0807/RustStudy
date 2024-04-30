@@ -27,9 +27,9 @@ pub async fn post_dwgSettings(
 #[put("/dwgSettings")]
 pub async fn put_dwgSettings(
     data: web::Data<mysql::Pool>,
-    keynum: String,
+    updateSet: web::Json<crate::dwgSetting::dto::dwgSetting::UpdateSetting>,
 ) -> actix_web::Result<impl Responder> {
-    web::block(move || service::put_dwgSetting(&data, keynum)).await??;
+    web::block(move || service::put_dwgSetting(&data, updateSet.into_inner())).await??;
     Ok(HttpResponse::Created())
 }
 

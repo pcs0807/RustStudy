@@ -11,6 +11,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(shared_data.clone())
             .service(dwgSetting::controller::get_dwgSettings)
             .service(dwgSetting::controller::post_dwgSettings)
+            .service(dwgSetting::controller::put_dwgSettings)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

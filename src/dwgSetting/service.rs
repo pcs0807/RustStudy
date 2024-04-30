@@ -1,6 +1,7 @@
 use crate::db::dwgSetting::*;
 use crate::dwgSetting::dto::dwgSetting::Setting;
 use crate::dwgSetting::dto::dwgSetting::UploadSetting;
+use crate::dwgSetting::dto::dwgSetting::UpdateSetting;
 use crate::dwgSetting::dto::response::dwgSettingsResponseData;
 
 use actix_web::http::StatusCode;
@@ -39,15 +40,15 @@ pub fn get_all_dwgSetting(pool: &mysql::Pool, column: String, order: bool) -> Re
     })
 }
 
-pub fn create_dwgSetting(pool: &mysql::Pool, uploadSet: UploadSetting) -> Result<(), dwgSettingError> {
+pub fn create_dwgSetting(pool: &mysql::Pool, upload: UploadSetting) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::post_dwgSetting(&mut conn, uploadSet.title, uploadSet.description, uploadSet.dwg, uploadSet.json)?;
+    query::post_dwgSetting(&mut conn, upload.title, upload.description, upload.dwg, upload.json)?;
     Ok(())
 }
 
-pub fn put_dwgSetting(pool: &mysql::Pool, dwgkeynum: String) -> Result<(), dwgSettingError> {
+pub fn put_dwgSetting(pool: &mysql::Pool, update: UpdateSetting) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::put_dwgSetting(&mut conn, dwgkeynum)?;
+    query::put_dwgSetting(&mut conn, update.keynum, update.title, update.description, update.result)?;
     Ok(())
 }
 
