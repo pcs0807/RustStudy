@@ -39,6 +39,24 @@ pub fn get_all_dwgSetting(pool: &mysql::Pool, column: String, order: bool) -> Re
     })
 }
 
+pub fn get_dwgSetting(pool: &mysql::Pool, key: String) -> Result<dwgSettingsResponseData, dwgSettingError> {
+    let mut conn = pool.get_conn()?;
+    Ok(dwgSettingsResponseData {
+        dwgSettings: query::select_setting(&mut conn, key)?
+            .iter()
+            .map(|DwgSetting| Setting {
+                keynum: DwgSetting.keynum.clone(),
+                title: DwgSetting.title.clone(),
+                description: DwgSetting.description.clone(),
+                dwg: DwgSetting.dwg.clone(),
+                json: DwgSetting.json.clone(),
+                instim: DwgSetting.instim.clone(),
+                cnltim: DwgSetting.cnltim.clone(),
+            })
+            .collect::<Vec<Setting>>(),
+    })
+}
+
 pub fn create_dwgSetting(pool: &mysql::Pool, upload: UploadSetting) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
     query::post_dwgSetting(&mut conn, upload.title, upload.description, upload.dwg, upload.json)?;
