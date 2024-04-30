@@ -95,15 +95,9 @@ pub fn put_dwgSetting(
 
 pub fn delete_dwgSetting(
     conn: &mut mysql::PooledConn,
-    dwgkeynum : String,
+    keynum : String,
 ) -> mysql::error::Result<()> {
-    conn.exec_drop(
-        r"
-        INSERT INTO `drawingautomation`.`DwgSetting` (dwgTitle, dwgDescription) VALUES (:dwgTitle, :dwgDescription);
-        ",
-        params! {
-            "dwgTitle" => dwgkeynum,
-        },
-    )
+    let query = format!("CALL DELETE_DWGSETTING({})", keynum);
+    conn.exec_drop(query, ())
 }
 

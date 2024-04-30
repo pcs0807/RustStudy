@@ -31,7 +31,7 @@ BEGIN
 	SET @currentDate = RIGHT(REPLACE(CURDATE(),"-",""),6);
 	SET @currentTime = NOW();
 	
-	SET @dwgfileKey = CONCAT(@currentDate, LPAD(CAST((SELECT fileSerial FROM fileinfo ORDER BY fileSerial DESC LIMIT 1) + 1 AS CHAR), 8, '0'));
+	SET @dwgfileKey = CONCAT(@currentDate, LPAD(CAST(IFNULL((SELECT fileSerial FROM fileinfo ORDER BY fileSerial DESC LIMIT 1) + 1, 1) AS CHAR), 8, '0'));
 	
 	INSERT INTO fileinfo 
 	(fileKey, fileName, filePath, fileInstim, fileCnltim, fileCancel) 
@@ -39,19 +39,50 @@ BEGIN
 	(@dwgfileKey, _dwgName, '/path/to/file/example_file.dwg', @currentTime, '', FALSE);
 	
 	
-	SET @jsonFileKey = CONCAT(@currentDate, LPAD(CAST((SELECT fileSerial FROM fileinfo ORDER BY fileSerial DESC LIMIT 1) + 1 AS CHAR), 8, '0'));
+	SET @jsonFileKey = CONCAT(@currentDate, LPAD(CAST(IFNULL((SELECT fileSerial FROM fileinfo ORDER BY fileSerial DESC LIMIT 1) + 1, 1) AS CHAR), 8, '0'));
 	
 	INSERT INTO fileinfo 
 	(fileKey, fileName, filePath, fileInstim, fileCnltim, fileCancel) 
 	VALUES 
 	(@jsonFileKey, _jsonName, '/path/to/file/example_file.json', @currentTime, '', FALSE);
 	
-	SET @dwgKey = CONCAT(@currentDate, LPAD(CAST((SELECT dwgSerial FROM dwgsetting ORDER BY dwgSerial DESC LIMIT 1) + 1 AS CHAR), 8, '0'));
+	SET @dwgKey = CONCAT(@currentDate, LPAD(CAST(IFNULL((SELECT dwgSerial FROM dwgsetting ORDER BY dwgSerial DESC LIMIT 1) + 1, 1) AS CHAR), 8, '0'));
 	
 	INSERT INTO dwgsetting 
 	(dwgKey, dwgTitle, dwgDescription, dwgFileKey, jsonFileKey, dwgInstim, dwgCnltim, dwgCancel) 
 	VALUES 
 	(@dwgKey, _dwgTitle, _dwgDescription, @dwgfileKey, @jsonFileKey, @currentTime, '', FALSE);
+	
+END//
+DELIMITER ;
+
+-- 프로시저 drawingautomation.DELETE_DWGSETTING 구조 내보내기
+DELIMITER //
+CREATE PROCEDURE `DELETE_DWGSETTING`(
+	IN _dwgKey TEXT
+)
+BEGIN
+	SET @currentTime = NOW();
+	
+	SET @dwgFileKey = '';
+	SET @jsonFileKey = '';
+	SET @dwgInstim = '';
+
+	
+	SELECT dwgFileKey, jsonFileKey
+	INTO @dwgFileKey, @jsonFileKey
+	FROM dwgsetting
+		WHERE dwgKey = _dwgKey 
+		AND dwgCancel = FALSE
+		LIMIT 1;
+		
+	UPDATE dwgsetting SET dwgCancel = TRUE, dwgCnltim = @currentTime
+	WHERE dwgKey = _dwgKey
+	AND dwgCancel = FALSE;
+	
+	UPDATE fileinfo SET fileCancel = TRUE, fileCnltim = @currentTime
+	WHERE fileKey IN (@dwgFileKey, @jsonFileKey)
+	AND fileCancel = FALSE;
 	
 END//
 DELIMITER ;
@@ -65,12 +96,9 @@ CREATE TABLE IF NOT EXISTS `dependinfo` (
   `dpCnltim` char(19) DEFAULT NULL,
   `dpCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`dpSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.dependinfo:~2 rows (대략적) 내보내기
-INSERT INTO `dependinfo` (`dpSerial`, `dpDwgSetKey`, `dpDesignKey`, `dpInstim`, `dpCnltim`, `dpCancel`) VALUES
-	(1, '1234', '1000', '2024-04-25 13:46:13', '2024-04-25 13:46:14', 0),
-	(2, '1234', '1001', '2024-04-25 13:46:13', '2024-04-25 13:46:14', 0);
+-- 테이블 데이터 drawingautomation.dependinfo:~0 rows (대략적) 내보내기
 
 -- 테이블 drawingautomation.designdetail 구조 내보내기
 CREATE TABLE IF NOT EXISTS `designdetail` (
@@ -83,14 +111,9 @@ CREATE TABLE IF NOT EXISTS `designdetail` (
   `dsdCnltim` char(19) DEFAULT NULL,
   `dsdCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`dsdSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.designdetail:~4 rows (대략적) 내보내기
-INSERT INTO `designdetail` (`dsdSerial`, `dsdKey`, `dsdName`, `dsdDescription`, `dsdValue`, `dsdinstim`, `dsdCnltim`, `dsdCancel`) VALUES
-	(1, '1000', 'VAR1', NULL, '123', '2024-04-25 13:42:45', '2024-04-25 13:42:46', 0),
-	(2, '1000', 'VAR2', NULL, '100X100', '2024-04-25 13:43:02', '2024-04-25 13:43:03', 0),
-	(3, '1001', 'BP01', NULL, '100', '2024-04-25 13:47:14', '2024-04-25 13:47:15', 0),
-	(4, '1001', 'BP02', NULL, '300', '2024-04-25 13:47:31', '2024-04-25 13:47:32', 0);
+-- 테이블 데이터 drawingautomation.designdetail:~0 rows (대략적) 내보내기
 
 -- 테이블 drawingautomation.designmaster 구조 내보내기
 CREATE TABLE IF NOT EXISTS `designmaster` (
@@ -101,12 +124,9 @@ CREATE TABLE IF NOT EXISTS `designmaster` (
   `dsmCnltim` char(19) DEFAULT NULL,
   `dsmCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`dsmSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.designmaster:~2 rows (대략적) 내보내기
-INSERT INTO `designmaster` (`dsmSerial`, `dsmKey`, `dsmVersion`, `dsmInstim`, `dsmCnltim`, `dsmCancel`) VALUES
-	(1, '1000', '1.0', '2024-04-25 13:42:02', '2024-04-25 13:42:02', 0),
-	(2, '1001', '1.0', '2024-04-25 13:46:32', '2024-04-25 13:46:33', 0);
+-- 테이블 데이터 drawingautomation.designmaster:~0 rows (대략적) 내보내기
 
 -- 테이블 drawingautomation.dwgsetting 구조 내보내기
 CREATE TABLE IF NOT EXISTS `dwgsetting` (
@@ -120,62 +140,17 @@ CREATE TABLE IF NOT EXISTS `dwgsetting` (
   `dwgCnltim` char(19) DEFAULT NULL,
   `dwgCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`dwgSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.dwgsetting:~46 rows (대략적) 내보내기
+-- 테이블 데이터 drawingautomation.dwgsetting:~7 rows (대략적) 내보내기
 INSERT INTO `dwgsetting` (`dwgSerial`, `dwgKey`, `dwgTitle`, `dwgDescription`, `dwgFileKey`, `jsonFileKey`, `dwgInstim`, `dwgCnltim`, `dwgCancel`) VALUES
-	(1, '1234', '테스트셋팅', '테스트입니다.', '100', '101', '2024-04-25 13:43:37', '2024-04-30 12:18:10', 1),
-	(2, '2404260', 'Example DWG Title', 'This is an example description.', '2404266', '2404267', '2024-04-26 14:51:24', '', 0),
-	(3, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000012', '24042600000013', '2024-04-26 14:57:23', '', 0),
-	(4, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000014', '24042600000015', '2024-04-26 14:58:16', '', 0),
-	(5, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000016', '24042600000017', '2024-04-26 14:58:20', '', 0),
-	(6, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000018', '24042600000019', '2024-04-26 14:59:21', '', 0),
-	(7, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000021', '24042600000022', '2024-04-26 15:01:58', '', 0),
-	(8, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000023', '24042600000024', '2024-04-26 15:03:08', '', 0),
-	(9, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000025', '24042600000026', '2024-04-26 15:13:24', '', 0),
-	(10, '2404260', 'Example DWG Title', 'This is an example description.', '24042600000027', '24042600000028', '2024-04-26 15:13:28', '', 0),
-	(11, '24042600000011', 'Example DWG Title', 'This is an example description.', '24042600000029', '24042600000030', '2024-04-26 15:15:16', '', 0),
-	(12, '24042600000012', 'Example DWG Title', 'This is an example description.', '24042600000031', '24042600000032', '2024-04-26 15:15:19', '', 0),
-	(13, '24042600000013', 'Example DWG Title', 'This is an example description.', '24042600000033', '24042600000034', '2024-04-26 15:15:23', '', 0),
-	(14, '24042600000014', 'Example DWG Title', 'This is an example description.', '24042600000035', '24042600000036', '2024-04-26 15:28:13', '', 0),
-	(15, '24042600000015', 'Example DWG Title', 'This is an example description.', '24042600000037', '24042600000038', '2024-04-26 15:31:11', '', 0),
-	(16, '24042600000016', 'Example DWG Title', 'This is an example description.', '24042600000039', '24042600000040', '2024-04-26 15:35:03', '', 0),
-	(17, '24042600000017', 'Example DWG Title', 'This is an example description.', '24042600000041', '24042600000042', '2024-04-26 15:37:53', '', 0),
-	(18, '24042600000018', 'Example DWG Title', 'This is an example description.', '24042600000043', '24042600000044', '2024-04-26 16:55:23', '', 0),
-	(19, '24042600000019', 'Example DWG Title', 'This is an example description.', '24042600000045', '24042600000046', '2024-04-26 16:55:32', '', 0),
-	(20, '24042600000020', 'Example DWG Title', 'This is an example description.', '24042600000047', '24042600000048', '2024-04-26 17:25:49', '', 0),
-	(21, '24042600000021', 'Example DWG Title', 'This is an example description.', '24042600000049', '24042600000050', '2024-04-26 17:26:31', '', 0),
-	(22, '24042600000022', 'Example DWG Title', 'This is an example description.', '24042600000051', '24042600000052', '2024-04-26 17:27:00', '', 0),
-	(23, '24042600000023', '123', 'novel', '24042600000053', '24042600000054', '2024-04-26 18:08:58', '', 0),
-	(24, '24042600000024', '123', 'novel', '24042600000055', '24042600000056', '2024-04-26 18:09:00', '', 0),
-	(25, '24042600000025', '123', 'novel', '24042600000057', '24042600000058', '2024-04-26 18:09:00', '', 0),
-	(26, '24042600000026', '123', 'novel', '24042600000059', '24042600000060', '2024-04-26 18:11:33', '', 0),
-	(27, '24042600000027', '123', 'novel', '24042600000061', '24042600000062', '2024-04-26 18:16:57', '', 0),
-	(28, '24042600000028', '제목', '설명', '24042600000063', '24042600000064', '2024-04-26 18:27:29', '', 0),
-	(29, '24042600000029', '혹시 들어갔나?', '설명', '24042600000065', '24042600000066', '2024-04-26 18:27:58', '', 0),
-	(30, '24042600000030', '김주노', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24042600000067', '24042600000068', '2024-04-26 18:30:58', '2024-04-30 12:36:57', 1),
-	(31, '78787887', 'title', 'descrip', '', '', '', '2024-04-30 11:06:13', 1),
-	(32, '78787887', 'title', 'descrip', '', '', '', '2024-04-30 11:11:19', 1),
-	(33, '78787887', 'title', 'descrip', '', '', '', '2024-04-30 11:11:19', 0),
-	(34, '1', '2', '3', '', '', '', '2024-04-30 11:43:42', 0),
-	(35, '122', '2', '3', '', '', '', '2024-04-30 11:49:50', 1),
-	(36, '122', '2', '3', '', '', '', '2024-04-30 11:50:26', 1),
-	(37, '122', '2', '3', '', '', '', '2024-04-30 11:55:59', 1),
-	(38, '152', '2', '3', '', '', '', '2024-04-30 11:50:45', 0),
-	(39, '122', '2', '3', '', '', '', '2024-04-30 11:56:13', 1),
-	(40, '122', '2', '3', '', '', '', '2024-04-30 11:56:13', 0),
-	(41, '1234', '1', '12', '100', '101', '2024-04-30 12:18:10', '2024-04-30 12:18:27', 1),
-	(42, '1234', '1', '12', '100', '101', '2024-04-30 12:18:27', '', 0),
-	(43, '24042600000030', '2', '3', '24042600000067', '24042600000068', '2024-04-30 12:36:57', '2024-04-30 12:37:19', 1),
-	(44, '24042600000030', '2', '3', '24042600000067', '24042600000068', '2024-04-30 12:37:19', '2024-04-30 12:37:20', 1),
-	(45, '24042600000030', '2', '3', '24042600000067', '24042600000068', '2024-04-30 12:37:20', '2024-04-30 12:37:20', 1),
-	(46, '24042600000030', '2', '3', '24042600000067', '24042600000068', '2024-04-30 12:37:20', '2024-04-30 12:44:37', 1),
-	(47, '24042600000030', '2', '3', '24042600000067', '24042600000068', '2024-04-30 12:44:37', '', 0),
-	(48, '24043000000048', '박찬석', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000069', '24043000000070', '2024-04-30 16:25:31', '2024-04-30 16:27:38', 1),
-	(49, '24043000000048', '123213', '2323', '24043000000069', '24043000000070', '2024-04-30 16:27:38', '2024-04-30 16:27:54', 1),
-	(50, '24043000000048', '바뀌어라 얍', '넌 뭔데', '24043000000069', '24043000000070', '2024-04-30 16:27:54', '2024-04-30 16:40:39', 1),
-	(51, '24043000000048', '가즈아', '넌 뭔데', '24043000000069', '24043000000070', '2024-04-30 16:40:39', '', 0),
-	(52, '24043000000052', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000071', '24043000000072', '2024-04-30 16:40:54', '', 0);
+	(1, '24043000000001', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000001', '24043000000002', '2024-04-30 17:36:01', '2024-04-30 17:36:22', 1),
+	(2, '24043000000002', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000003', '24043000000004', '2024-04-30 17:36:04', '2024-04-30 17:36:32', 1),
+	(3, '24043000000002', '가즈아', '넌 뭔데', '24043000000003', '24043000000004', '2024-04-30 17:36:32', '2024-04-30 17:42:18', 1),
+	(4, '24043000000004', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000005', '24043000000006', '2024-04-30 17:42:24', '2024-04-30 18:08:54', 1),
+	(5, '24043000000004', '제목', '가즈아', '24043000000005', '24043000000006', '2024-04-30 18:08:54', '', 0),
+	(6, '24043000000006', 'ㅇㄹㅇ', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000007', '24043000000008', '2024-04-30 18:09:32', '2024-04-30 18:09:46', 1),
+	(7, '24043000000006', '안녕', '가즈아', '24043000000007', '24043000000008', '2024-04-30 18:09:46', '', 0);
 
 -- 테이블 drawingautomation.fileinfo 구조 내보내기
 CREATE TABLE IF NOT EXISTS `fileinfo` (
@@ -187,143 +162,18 @@ CREATE TABLE IF NOT EXISTS `fileinfo` (
   `fileCnltim` char(19) DEFAULT NULL,
   `fileCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`fileSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.fileinfo:~68 rows (대략적) 내보내기
+-- 테이블 데이터 drawingautomation.fileinfo:~8 rows (대략적) 내보내기
 INSERT INTO `fileinfo` (`fileSerial`, `fileKey`, `fileName`, `filePath`, `fileInstim`, `fileCnltim`, `fileCancel`) VALUES
-	(1, '100', 'test.dwg', 'D:', '2024-04-25 13:40:12', '2024-04-25 13:40:13', 0),
-	(2, '101', 'test.json', 'D:', '2024-04-25 13:41:01', '2024-04-25 15:39:37', 1),
-	(3, '101', 'test.json', 'c:', '2024-04-25 15:39:36', '2024-04-25 15:39:37', 0),
-	(4, '2404260', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:47:24', '2024-04-26 14:47:24', 0),
-	(5, '2404260', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:50:48', '', 0),
-	(6, '2404260', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:51:24', '', 0),
-	(7, '2404260', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 14:51:24', '', 0),
-	(8, '2404260', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:52:31', '', 0),
-	(9, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:55:41', '', 0),
-	(10, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:56:33', '', 0),
-	(11, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:56:36', '', 0),
-	(12, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:57:23', '', 0),
-	(13, '24042600000000', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 14:57:23', '', 0),
-	(14, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:58:16', '', 0),
-	(15, '24042600000000', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 14:58:16', '', 0),
-	(16, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:58:20', '', 0),
-	(17, '24042600000000', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 14:58:20', '', 0),
-	(18, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:59:21', '', 0),
-	(19, '24042600000000', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 14:59:21', '', 0),
-	(20, '00000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 14:59:21', '', 0),
-	(21, '24042600000020', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:01:58', '', 0),
-	(22, '24042600000021', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:01:58', '', 0),
-	(23, '24042600000000', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:03:08', '', 0),
-	(24, '24042600000000', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:03:08', '', 0),
-	(25, '24042600000025', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:13:24', '', 0),
-	(26, '24042600000026', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:13:24', '', 0),
-	(27, '24042600000027', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:13:28', '', 0),
-	(28, '24042600000028', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:13:28', '', 0),
-	(29, '24042600000029', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:15:16', '', 0),
-	(30, '24042600000030', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:15:16', '', 0),
-	(31, '24042600000031', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:15:19', '', 0),
-	(32, '24042600000032', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:15:19', '', 0),
-	(33, '24042600000033', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:15:23', '', 0),
-	(34, '24042600000034', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:15:23', '', 0),
-	(35, '24042600000035', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:28:13', '', 0),
-	(36, '24042600000036', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:28:13', '', 0),
-	(37, '24042600000037', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:31:11', '', 0),
-	(38, '24042600000038', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:31:11', '', 0),
-	(39, '24042600000039', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:35:03', '', 0),
-	(40, '24042600000040', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:35:03', '', 0),
-	(41, '24042600000041', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 15:37:53', '', 0),
-	(42, '24042600000042', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 15:37:53', '', 0),
-	(43, '24042600000043', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 16:55:23', '', 0),
-	(44, '24042600000044', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 16:55:23', '', 0),
-	(45, '24042600000045', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 16:55:32', '', 0),
-	(46, '24042600000046', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 16:55:32', '', 0),
-	(47, '24042600000047', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 17:25:49', '', 0),
-	(48, '24042600000048', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 17:25:49', '', 0),
-	(49, '24042600000049', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 17:26:31', '', 0),
-	(50, '24042600000050', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 17:26:31', '', 0),
-	(51, '24042600000051', 'example_file.dwg', '/path/to/file/example_file.dwg', '2024-04-26 17:27:00', '', 0),
-	(52, '24042600000052', 'example_file.json', '/path/to/file/example_file.json', '2024-04-26 17:27:00', '', 0),
-	(53, '24042600000053', '00001', '/path/to/file/example_file.dwg', '2024-04-26 18:08:58', '', 0),
-	(54, '24042600000054', 'AAA', '/path/to/file/example_file.json', '2024-04-26 18:08:58', '', 0),
-	(55, '24042600000055', '00001', '/path/to/file/example_file.dwg', '2024-04-26 18:09:00', '', 0),
-	(56, '24042600000056', 'AAA', '/path/to/file/example_file.json', '2024-04-26 18:09:00', '', 0),
-	(57, '24042600000057', '00001', '/path/to/file/example_file.dwg', '2024-04-26 18:09:00', '', 0),
-	(58, '24042600000058', 'AAA', '/path/to/file/example_file.json', '2024-04-26 18:09:00', '', 0),
-	(59, '24042600000059', '00001', '/path/to/file/example_file.dwg', '2024-04-26 18:11:33', '', 0),
-	(60, '24042600000060', 'AAA', '/path/to/file/example_file.json', '2024-04-26 18:11:33', '', 0),
-	(61, '24042600000061', '00001', '/path/to/file/example_file.dwg', '2024-04-26 18:16:57', '', 0),
-	(62, '24042600000062', 'AAA', '/path/to/file/example_file.json', '2024-04-26 18:16:57', '', 0),
-	(63, '24042600000063', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-26 18:27:29', '', 0),
-	(64, '24042600000064', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-26 18:27:29', '', 0),
-	(65, '24042600000065', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-26 18:27:58', '', 0),
-	(66, '24042600000066', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-26 18:27:58', '', 0),
-	(67, '24042600000067', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-26 18:30:58', '', 0),
-	(68, '24042600000068', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-26 18:30:58', '', 0),
-	(69, '24043000000069', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 16:25:31', '', 0),
-	(70, '24043000000070', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 16:25:31', '', 0),
-	(71, '24043000000071', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 16:40:54', '', 0),
-	(72, '24043000000072', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 16:40:54', '', 0);
-
--- 프로시저 drawingautomation.TEST_PROC 구조 내보내기
-DELIMITER //
-CREATE PROCEDURE `TEST_PROC`(
-	IN `_dwgKey` TEXT,
-	IN `_title` TEXT,
-	IN `_description` TEXT,
-	OUT `RESULT` TEXT
-)
-BEGIN
-	SET @currentTime = NOW();
-	
-	SET @dwgSerial = 0;
-	SET @dwgFileKey = '';
-	SET @jsonFileKey = '';
-	SET @dwgInstim = '';
-	SET @recordCnt = 0;
-
-	
-	SELECT COUNT(*), dwgSerial, dwgFileKey, jsonFileKey, dwgInstim 
-	INTO @recordCnt, @dwgSerial, @dwgFileKey, @jsonFileKey, @dwgInstim 
-	FROM dwgsetting
-		WHERE dwgKey = _dwgKey 
-		AND dwgCancel = FALSE
-		LIMIT 1;
-		
-	SET RESULT = '1';
-	
-	SET RESULT = @dwgSerial;
-	
-		IF @recordCnt > 0 THEN
-		
-			SET RESULT = '3';
-		
-			UPDATE dwgsetting 
-			SET dwgCancel = TRUE, dwgCnltim = @currentTime
-			WHERE dwgSerial = @dwgSerial;		
-			
-			INSERT INTO dwgsetting 
-				(dwgKey, 
-				dwgTitle, 
-				dwgDescription, 
-				dwgFileKey, 
-				jsonFileKey, 
-				dwgInstim, 
-				dwgCnltim, 
-				dwgCancel) 
-				VALUES 
-				(_dwgKey, 
-				_title, 
-				_description, 
-				@dwgFileKey, 
-				@jsonFileKey, 
-				@currentTime, 
-				'', 
-				FALSE);
-				
-		END IF;
-	
-END//
-DELIMITER ;
+	(1, '24043000000001', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 17:36:01', '2024-04-30 17:36:22', 1),
+	(2, '24043000000002', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 17:36:01', '2024-04-30 17:36:22', 1),
+	(3, '24043000000003', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 17:36:04', '2024-04-30 17:42:18', 1),
+	(4, '24043000000004', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 17:36:04', '2024-04-30 17:42:18', 1),
+	(5, '24043000000005', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 17:42:24', '', 0),
+	(6, '24043000000006', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 17:42:24', '', 0),
+	(7, '24043000000007', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 18:09:32', '', 0),
+	(8, '24043000000008', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 18:09:32', '', 0);
 
 -- 프로시저 drawingautomation.UPDATE_DWGSETTING 구조 내보내기
 DELIMITER //

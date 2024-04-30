@@ -1,7 +1,6 @@
 use crate::db::dwgSetting::*;
 use crate::dwgSetting::dto::dwgSetting::Setting;
 use crate::dwgSetting::dto::dwgSetting::UploadSetting;
-use crate::dwgSetting::dto::dwgSetting::UpdateSetting;
 use crate::dwgSetting::dto::response::dwgSettingsResponseData;
 
 use actix_web::http::StatusCode;
@@ -46,14 +45,14 @@ pub fn create_dwgSetting(pool: &mysql::Pool, upload: UploadSetting) -> Result<()
     Ok(())
 }
 
-pub fn put_dwgSetting(pool: &mysql::Pool, update: UpdateSetting) -> Result<(), dwgSettingError> {
+pub fn put_dwgSetting(pool: &mysql::Pool, key: String, title: String, description: String, res: i32) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::put_dwgSetting(&mut conn, update.keynum, update.title, update.description, update.result)?;
+    query::put_dwgSetting(&mut conn, key, title, description, res)?;
     Ok(())
 }
 
-pub fn delete_dwgSetting(pool: &mysql::Pool, dwgkeynum: String) -> Result<(), dwgSettingError> {
+pub fn delete_dwgSetting(pool: &mysql::Pool, key: String) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::delete_dwgSetting(&mut conn, dwgkeynum)?;
+    query::delete_dwgSetting(&mut conn, key)?;
     Ok(())
 }

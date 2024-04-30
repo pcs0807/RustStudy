@@ -21,7 +21,6 @@ pub struct UploadSetting {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateSetting {
-    pub keynum: String,
     pub title: String,
     pub description: String,
     pub result: i32,
