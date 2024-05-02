@@ -31,13 +31,10 @@ pub async fn get_dwgSettings(data: web::Data<mysql::Pool>, query_params: web::Qu
 #[get("/dwgSettings/{keynum}")]
 pub async fn get_dwgSetting(data: web::Data<mysql::Pool>,key: web::Path<String>) -> actix_web::Result<impl Responder> {
     let id = key.into_inner();
+
     if id.is_empty() {
         return Ok(HttpResponse::BadRequest().body("id정보가 없습니다."));
       }
-
-    if !id.parse::<i32>().is_ok() {
-        return Ok(HttpResponse::BadRequest().body("id는 숫자여야 합니다."));
-    }
 
     let dwgSettings = web::block(move || service::get_dwgSetting(&data, id)).await??;
     Ok(HttpResponse::Ok().json(dwgSettings))
@@ -48,14 +45,6 @@ pub async fn post_dwgSetting(
     data: web::Data<mysql::Pool>,
     uploadSet: web::Json<crate::dwgSetting::dto::dwgSetting::UploadSetting>,
 ) -> actix_web::Result<impl Responder> {
-
-    if uploadSet.dwg.is_empty() {
-        return Ok(HttpResponse::BadRequest().body("dwg 파일(parameter: dwg)이 필요합니다."));
-    }
-
-    if uploadSet.json.is_empty() {
-        return Ok(HttpResponse::BadRequest().body("json 파일(parameter: json)이 필요합니다."));
-    }
 
     if uploadSet.title.is_empty() {
         return Ok(HttpResponse::BadRequest().body("설정 이름(parameter: name)이 필요합니다."));
@@ -94,10 +83,6 @@ pub async fn put_dwgSetting(
         return Ok(HttpResponse::BadRequest().body("id정보가 없습니다."));
       }
 
-    if !keynum.parse::<i32>().is_ok() {
-        return Ok(HttpResponse::BadRequest().body("id는 숫자여야 합니다."));
-    }
-
     if title.is_empty() && description.is_empty() {
         return Ok(HttpResponse::BadRequest().body("변경할 정보가 없습니다. (name, dwg 등)"));
       }
@@ -117,10 +102,6 @@ pub async fn delete_dwgSetting(
 
     if keynum.is_empty() {
         return Ok(HttpResponse::BadRequest().body("id정보가 없습니다."));
-    }
-
-    if !keynum.parse::<i32>().is_ok() {
-        return Ok(HttpResponse::BadRequest().body("id는 숫자여야 합니다."));
     }
 
     match web::block(move || service::delete_dwgSetting(&data, keynum)).await {
