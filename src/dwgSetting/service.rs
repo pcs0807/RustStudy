@@ -8,6 +8,7 @@ use derive_more::{Display, Error, From};
 
 #[derive(Debug, Display, Error, From)]
 pub enum dwgSettingError {
+    PostError,
     MysqlError(mysql::Error),
     Unknown,
 }
@@ -15,10 +16,12 @@ pub enum dwgSettingError {
 impl actix_web::ResponseError for dwgSettingError {
     fn status_code(&self) -> StatusCode {
         match self {
+            dwgSettingError::PostError => StatusCode::INTERNAL_SERVER_ERROR,
             dwgSettingError::MysqlError(_) | dwgSettingError::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
+
 
 pub fn get_all_dwgSetting(pool: &mysql::Pool, column: String, order: bool) -> Result<dwgSettingsResponseData, dwgSettingError> {
     let mut conn = pool.get_conn()?;
@@ -59,7 +62,10 @@ pub fn get_dwgSetting(pool: &mysql::Pool, key: String) -> Result<dwgSettingsResp
 
 pub fn create_dwgSetting(pool: &mysql::Pool, upload: UploadSetting) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::post_dwgSetting(&mut conn, upload.title, upload.description, upload.dwg, upload.json)?;
+    query::post_dwgSetting(&mut conn, upload.title, upload.description, upload.dwg, upload.json)
+    .map_err(|_| dwgSettingError::PostError)?;
+   
+
     Ok(())
 }
 
