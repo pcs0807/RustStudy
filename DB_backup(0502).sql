@@ -140,17 +140,28 @@ CREATE TABLE IF NOT EXISTS `dwgsetting` (
   `dwgCnltim` char(19) DEFAULT NULL,
   `dwgCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`dwgSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.dwgsetting:~7 rows (대략적) 내보내기
+-- 테이블 데이터 drawingautomation.dwgsetting:~16 rows (대략적) 내보내기
 INSERT INTO `dwgsetting` (`dwgSerial`, `dwgKey`, `dwgTitle`, `dwgDescription`, `dwgFileKey`, `jsonFileKey`, `dwgInstim`, `dwgCnltim`, `dwgCancel`) VALUES
 	(1, '24043000000001', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000001', '24043000000002', '2024-04-30 17:36:01', '2024-04-30 17:36:22', 1),
 	(2, '24043000000002', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000003', '24043000000004', '2024-04-30 17:36:04', '2024-04-30 17:36:32', 1),
 	(3, '24043000000002', '가즈아', '넌 뭔데', '24043000000003', '24043000000004', '2024-04-30 17:36:32', '2024-04-30 17:42:18', 1),
 	(4, '24043000000004', '오세아니아', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000005', '24043000000006', '2024-04-30 17:42:24', '2024-04-30 18:08:54', 1),
-	(5, '24043000000004', '제목', '가즈아', '24043000000005', '24043000000006', '2024-04-30 18:08:54', '', 0),
+	(5, '24043000000004', '제목', '가즈아', '24043000000005', '24043000000006', '2024-04-30 18:08:54', '2024-05-02 10:33:18', 1),
 	(6, '24043000000006', 'ㅇㄹㅇ', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000007', '24043000000008', '2024-04-30 18:09:32', '2024-04-30 18:09:46', 1),
-	(7, '24043000000006', '안녕', '가즈아', '24043000000007', '24043000000008', '2024-04-30 18:09:46', '', 0);
+	(7, '24043000000006', '안녕', '가즈아', '24043000000007', '24043000000008', '2024-04-30 18:09:46', '2024-04-30 19:27:14', 1),
+	(8, '24043000000008', '안녕하세요', 'ㄶㅇㅎㄴㅇㅇㅎㄴ', '24043000000009', '24043000000010', '2024-04-30 19:26:18', '2024-04-30 19:26:58', 1),
+	(9, '24043000000006', '22333', '가즈아', '24043000000007', '24043000000008', '2024-04-30 19:27:14', '2024-04-30 19:28:14', 1),
+	(10, '24043000000006', '33333', '가즈아', '24043000000007', '24043000000008', '2024-04-30 19:28:14', '2024-05-02 10:32:54', 1),
+	(11, '24043000000011', '마이다스 아이티', '굿 잡', '24043000000011', '24043000000012', '2024-04-30 20:14:43', '2024-04-30 20:15:04', 1),
+	(12, '24043000000011', '마이다스인', '가즈아', '24043000000011', '24043000000012', '2024-04-30 20:15:04', '2024-04-30 20:15:11', 1),
+	(13, '24043000000013', '유지보수 테스트', '굿 잡', '24043000000013', '24043000000014', '2024-04-30 20:16:34', '2024-04-30 20:16:53', 1),
+	(14, '24043000000013', '유지보수 해보자', '232323', '24043000000013', '24043000000014', '2024-04-30 20:16:53', '2024-04-30 20:17:06', 1),
+	(15, '24043000000013', '유지보수 해보자', '마지막 변경', '24043000000013', '24043000000014', '2024-04-30 20:17:06', '2024-05-02 10:32:40', 1),
+	(16, '24043000000004', '유지보수 해보자', '마지막 변경', '24043000000005', '24043000000006', '2024-05-02 10:33:18', '', 0),
+	(17, '24050200000017', '유지ssd스트', '굿 잡', '24050200000015', '24050200000016', '2024-05-02 11:00:01', '', 0),
+	(18, '24050200000018', '유121스트', '굿 잡', '24050200000017', '24050200000018', '2024-05-02 11:00:04', '', 0);
 
 -- 테이블 drawingautomation.fileinfo 구조 내보내기
 CREATE TABLE IF NOT EXISTS `fileinfo` (
@@ -162,9 +173,9 @@ CREATE TABLE IF NOT EXISTS `fileinfo` (
   `fileCnltim` char(19) DEFAULT NULL,
   `fileCancel` tinyint(1) NOT NULL,
   PRIMARY KEY (`fileSerial`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 drawingautomation.fileinfo:~8 rows (대략적) 내보내기
+-- 테이블 데이터 drawingautomation.fileinfo:~14 rows (대략적) 내보내기
 INSERT INTO `fileinfo` (`fileSerial`, `fileKey`, `fileName`, `filePath`, `fileInstim`, `fileCnltim`, `fileCancel`) VALUES
 	(1, '24043000000001', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 17:36:01', '2024-04-30 17:36:22', 1),
 	(2, '24043000000002', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 17:36:01', '2024-04-30 17:36:22', 1),
@@ -172,8 +183,86 @@ INSERT INTO `fileinfo` (`fileSerial`, `fileKey`, `fileName`, `filePath`, `fileIn
 	(4, '24043000000004', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 17:36:04', '2024-04-30 17:42:18', 1),
 	(5, '24043000000005', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 17:42:24', '', 0),
 	(6, '24043000000006', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 17:42:24', '', 0),
-	(7, '24043000000007', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 18:09:32', '', 0),
-	(8, '24043000000008', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 18:09:32', '', 0);
+	(7, '24043000000007', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 18:09:32', '2024-05-02 10:32:54', 1),
+	(8, '24043000000008', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 18:09:32', '2024-05-02 10:32:54', 1),
+	(9, '24043000000009', 'DWG 파일 데이터', '/path/to/file/example_file.dwg', '2024-04-30 19:26:18', '2024-04-30 19:26:58', 1),
+	(10, '24043000000010', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 19:26:18', '2024-04-30 19:26:58', 1),
+	(11, '24043000000011', 'ㄴㅇㅇㄴ', '/path/to/file/example_file.dwg', '2024-04-30 20:14:43', '2024-04-30 20:15:11', 1),
+	(12, '24043000000012', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 20:14:43', '2024-04-30 20:15:11', 1),
+	(13, '24043000000013', 'ㄴㅇㅇㄴ', '/path/to/file/example_file.dwg', '2024-04-30 20:16:34', '2024-05-02 10:32:40', 1),
+	(14, '24043000000014', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-04-30 20:16:34', '2024-05-02 10:32:40', 1),
+	(15, '24050200000015', 'ㄴㅇㅇㄴ', '/path/to/file/example_file.dwg', '2024-05-02 11:00:01', '', 0),
+	(16, '24050200000016', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-05-02 11:00:01', '', 0),
+	(17, '24050200000017', 'ㄴㅇㅇㄴ', '/path/to/file/example_file.dwg', '2024-05-02 11:00:04', '', 0),
+	(18, '24050200000018', 'JSON 파일 데이터', '/path/to/file/example_file.json', '2024-05-02 11:00:04', '', 0);
+
+-- 프로시저 drawingautomation.SELECT_DWGSETTING 구조 내보내기
+DELIMITER //
+CREATE PROCEDURE `SELECT_DWGSETTING`(
+	IN `_key` TEXT,
+	IN `_column` TEXT,
+	IN `_asc` BOOL
+)
+BEGIN
+
+    SET @orderDirection = IF(_asc, 'ASC', 'DESC');
+    
+    SET @orderByColumn = '';
+    
+    IF _column = 'latest' THEN
+        SET @orderByColumn = 'dwgInstim';
+    ELSEIF _column = 'name' THEN
+        SET @orderByColumn = 'dwgTitle';
+    ELSE
+        SET @orderByColumn = 'dwgInstim';
+    END IF;
+
+    SET @query = CONCAT('
+        SELECT 
+            dwgKey, 
+            dwgTitle, 
+            dwgDescription, 
+            dwgFile.fileName AS dwgFileName, 
+            jsonFile.fileName AS jsonFileName, 
+            dwgInstim, 
+            dwgCnltim 
+        FROM dwgsetting 
+            INNER JOIN 
+                (SELECT 
+                    fileKey, 
+                    fileName, 
+                    filePath 
+                    FROM dwgsetting 
+                    INNER JOIN fileinfo 
+                    ON dwgFileKey = fileKey 
+                    AND fileCancel = 0 
+                    WHERE dwgCancel = 0) AS dwgFile 
+            ON dwgsetting.dwgFilekey = dwgFile.fileKey 
+            INNER JOIN 
+                (SELECT 
+                    fileKey, 
+                    fileName,
+                    filePath 
+                    FROM dwgsetting 
+                    INNER JOIN fileinfo 
+                    ON jsonFilekey = fileKey 
+                    AND fileCancel = 0 
+                    WHERE dwgCancel = 0) AS jsonFile 
+            ON dwgsetting.jsonFilekey = jsonFile.fileKey
+        WHERE dwgcancel = 0');
+        
+    IF _key != '' THEN
+     SET @query = CONCAT(@query, ' AND dwgKey = ', QUOTE(_key));
+    END IF;
+    
+    SET @query = CONCAT(@query, ' ORDER BY ', @orderByColumn, ' ', @orderDirection);
+    
+    PREPARE stmt FROM @query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+END//
+DELIMITER ;
 
 -- 프로시저 drawingautomation.UPDATE_DWGSETTING 구조 내보내기
 DELIMITER //

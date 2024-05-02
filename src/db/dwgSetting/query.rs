@@ -5,56 +5,9 @@ use crate::db::dwgSetting::model::FileInfo;
 use mysql::{params, prelude::*};
 
 pub fn select_settings(conn: &mut mysql::PooledConn, column: String, order: bool) -> mysql::error::Result<Vec<DwgSetting>> {
-    let column_name = match column {
-        latest => "dwgInstim",
-        name => "dwgTitle",
-        _ => "dwgInstim", // 기본값은 dwgInstim으로 설정
-    };
-
-    let order_by = match order {
-        true => format!("{} ASC", column_name),
-        false => format!("{} DESC", column_name),
-        _ => format!("{} ASC", column_name), // 기본값은 오름차순으로 설정
-    };
 
     let query = format!(
-        "
-        SELECT 
-            dwgKey, 
-            dwgTitle, 
-            dwgDescription, 
-            dwgFile.fileName AS dwgFileName, 
-            jsonFile.fileName AS jsonFileName, 
-            dwgInstim, 
-            dwgCnltim 
-        FROM dwgsetting 
-            INNER JOIN 
-                (SELECT 
-                    fileKey, 
-                    fileName, 
-                    filePath 
-                    FROM dwgsetting 
-                    INNER JOIN fileinfo 
-                    ON dwgFileKey = fileKey 
-                    AND fileCancel = 0 
-                    WHERE dwgCancel = 0) AS dwgFile 
-            ON dwgsetting.dwgFilekey = dwgFile.fileKey 
-            INNER JOIN 
-                (SELECT 
-                    fileKey, 
-                    fileName,
-                    filePath 
-                    FROM dwgsetting 
-                    INNER JOIN fileinfo 
-                    ON jsonFilekey = fileKey 
-                    AND fileCancel = 0 
-                    WHERE dwgCancel = 0) AS jsonFile 
-            ON dwgsetting.jsonFilekey = jsonFile.fileKey
-        WHERE dwgcancel = 0
-        ORDER BY {};
-        ",
-        order_by
-    );
+        "CALL SELECT_DWGSETTING('', '{}', {})", column, order);
 
     conn.query_map(
         &query,
@@ -72,39 +25,7 @@ pub fn select_settings(conn: &mut mysql::PooledConn, column: String, order: bool
 
 pub fn select_setting( conn: &mut mysql::PooledConn, key: String) -> mysql::error::Result<Vec<DwgSetting>> {
     let query = format!(
-        "SELECT 
-        dwgKey, 
-        dwgTitle, 
-        dwgDescription, 
-        dwgFile.fileName AS dwgFileName, 
-        jsonFile.fileName AS jsonFileName, 
-        dwgInstim, 
-        dwgCnltim 
-        FROM dwgsetting 
-            INNER JOIN 
-                (SELECT 
-                    fileKey, 
-                    fileName, 
-                    filePath 
-                    FROM dwgsetting 
-                    INNER JOIN fileinfo 
-                    ON dwgFileKey = fileKey 
-                    AND fileCancel = 0 
-                    WHERE dwgCancel = 0) AS dwgFile 
-            ON dwgsetting.dwgFilekey = dwgFile.fileKey 
-            INNER JOIN 
-                (SELECT 
-                    fileKey, 
-                    fileName,
-                    filePath 
-                    FROM dwgsetting 
-                    INNER JOIN fileinfo 
-                    ON jsonFilekey = fileKey 
-                    AND fileCancel = 0 
-                    WHERE dwgCancel = 0) AS jsonFile 
-            ON dwgsetting.jsonFilekey = jsonFile.fileKey
-        WHERE dwgcancel = 0
-        AND dwgKey = {}", key);
+        "CALL SELECT_DWGSETTING({}, '', TRUE)", key);
     
         conn.query_map(
             &query,
@@ -118,7 +39,6 @@ pub fn select_setting( conn: &mut mysql::PooledConn, key: String) -> mysql::erro
                 cnltim: cnltim
             },
         )
-
 }
 
 pub fn post_dwgSetting(
