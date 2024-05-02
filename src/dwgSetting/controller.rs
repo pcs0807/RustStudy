@@ -62,9 +62,7 @@ pub async fn post_dwgSetting(
     }
    
     let dwg = uploadSet.dwg.clone();
-    println!("{}",dwg);
     let json = uploadSet.json.clone();
-    println!("{}",json);
     match crate::dwgSetting::dto::FileManager::SaveFile(dwg).await {
         Ok(_) => (),
         Err(e) => return Ok(HttpResponse::InternalServerError().body(format!("Failed to save dwg file: {}", e))),
