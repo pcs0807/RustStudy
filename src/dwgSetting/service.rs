@@ -39,20 +39,38 @@ pub fn get_all_dwgSetting(pool: &mysql::Pool, column: String, order: bool) -> Re
     })
 }
 
-pub fn create_dwgSetting(pool: &mysql::Pool, uploadSet: UploadSetting) -> Result<(), dwgSettingError> {
+pub fn get_dwgSetting(pool: &mysql::Pool, key: String) -> Result<dwgSettingsResponseData, dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::post_dwgSetting(&mut conn, uploadSet.title, uploadSet.description, uploadSet.dwg, uploadSet.json)?;
+    Ok(dwgSettingsResponseData {
+        dwgSettings: query::select_setting(&mut conn, key)?
+            .iter()
+            .map(|DwgSetting| Setting {
+                keynum: DwgSetting.keynum.clone(),
+                title: DwgSetting.title.clone(),
+                description: DwgSetting.description.clone(),
+                dwg: DwgSetting.dwg.clone(),
+                json: DwgSetting.json.clone(),
+                instim: DwgSetting.instim.clone(),
+                cnltim: DwgSetting.cnltim.clone(),
+            })
+            .collect::<Vec<Setting>>(),
+    })
+}
+
+pub fn create_dwgSetting(pool: &mysql::Pool, upload: UploadSetting) -> Result<(), dwgSettingError> {
+    let mut conn = pool.get_conn()?;
+    query::post_dwgSetting(&mut conn, upload.title, upload.description, upload.dwg, upload.json)?;
     Ok(())
 }
 
-pub fn put_dwgSetting(pool: &mysql::Pool, dwgkeynum: String) -> Result<(), dwgSettingError> {
+pub fn put_dwgSetting(pool: &mysql::Pool, key: String, title: String, description: String, res: i32) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::put_dwgSetting(&mut conn, dwgkeynum)?;
+    query::put_dwgSetting(&mut conn, key, title, description, res)?;
     Ok(())
 }
 
-pub fn delete_dwgSetting(pool: &mysql::Pool, dwgkeynum: String) -> Result<(), dwgSettingError> {
+pub fn delete_dwgSetting(pool: &mysql::Pool, key: String) -> Result<(), dwgSettingError> {
     let mut conn = pool.get_conn()?;
-    query::delete_dwgSetting(&mut conn, dwgkeynum)?;
+    query::delete_dwgSetting(&mut conn, key)?;
     Ok(())
 }

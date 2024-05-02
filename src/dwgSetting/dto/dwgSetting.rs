@@ -18,3 +18,10 @@ pub struct UploadSetting {
     pub dwg: String,
     pub json: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateSetting {
+    pub title: String,
+    pub description: String,
+    pub result: i32,
+}

@@ -1,1 +1,1 @@
-# Rust Study 용
+rust web study

@@ -5,56 +5,9 @@ use crate::db::dwgSetting::model::FileInfo;
 use mysql::{params, prelude::*};
 
 pub fn select_settings(conn: &mut mysql::PooledConn, column: String, order: bool) -> mysql::error::Result<Vec<DwgSetting>> {
-    let column_name = match column {
-        latest => "dwgInstim",
-        name => "dwgTitle",
-        _ => "dwgInstim", // 기본값은 dwgInstim으로 설정
-    };
-
-    let order_by = match order {
-        true => format!("{} ASC", column_name),
-        false => format!("{} DESC", column_name),
-        _ => format!("{} ASC", column_name), // 기본값은 오름차순으로 설정
-    };
 
     let query = format!(
-        "
-        SELECT 
-            dwgKey, 
-            dwgTitle, 
-            dwgDescription, 
-            dwgFile.fileName AS dwgFileName, 
-            jsonFile.fileName AS jsonFileName, 
-            dwgInstim, 
-            dwgCnltim 
-        FROM dwgsetting 
-            INNER JOIN 
-                (SELECT 
-                    fileKey, 
-                    fileName, 
-                    filePath 
-                    FROM dwgsetting 
-                    INNER JOIN fileinfo 
-                    ON dwgFileKey = fileKey 
-                    AND fileCancel = 0 
-                    WHERE dwgCancel = 0) AS dwgFile 
-            ON dwgsetting.dwgFilekey = dwgFile.fileKey 
-            INNER JOIN 
-                (SELECT 
-                    fileKey, 
-                    fileName,
-                    filePath 
-                    FROM dwgsetting 
-                    INNER JOIN fileinfo 
-                    ON jsonFilekey = fileKey 
-                    AND fileCancel = 0 
-                    WHERE dwgCancel = 0) AS jsonFile 
-            ON dwgsetting.jsonFilekey = jsonFile.fileKey
-        WHERE dwgcancel = 0
-        ORDER BY {};
-        ",
-        order_by
-    );
+        "CALL SELECT_DWGSETTING('', '{}', {})", column, order);
 
     conn.query_map(
         &query,
@@ -70,6 +23,24 @@ pub fn select_settings(conn: &mut mysql::PooledConn, column: String, order: bool
     )
 }
 
+pub fn select_setting( conn: &mut mysql::PooledConn, key: String) -> mysql::error::Result<Vec<DwgSetting>> {
+    let query = format!(
+        "CALL SELECT_DWGSETTING({}, '', TRUE)", key);
+    
+        conn.query_map(
+            &query,
+            |(keynum, title, description, dwg, json, instim, cnltim)| DwgSetting {  
+                keynum: keynum,          
+                title: title,
+                description: description,
+                dwg: dwg,
+                json: json,
+                instim: instim,
+                cnltim: cnltim
+            },
+        )
+}
+
 pub fn post_dwgSetting(
     conn: &mut mysql::PooledConn,
     title: String,
@@ -77,7 +48,6 @@ pub fn post_dwgSetting(
     dwgName: String,
     jsonName: String,
 ) -> mysql::error::Result<()> {
-    // 여러번의 쿼리 동시 실행으로 DB 프로시저로 따로 빼둠 [CREATE_DWGSETTING]
     let query = "CALL CREATE_DWGSETTING(?, ?, ?, ?)";
     conn.exec_drop(query, (dwgName, jsonName, title, description))
 }
@@ -85,29 +55,20 @@ pub fn post_dwgSetting(
 
 pub fn put_dwgSetting(
     conn: &mut mysql::PooledConn,
-    dwgkeynum : String,
+    key : String,
+    title : String,
+    description : String,
+    result : i32,
 ) -> mysql::error::Result<()> {
-    conn.exec_drop(
-        r"
-        INSERT INTO `drawingautomation`.`DwgSetting` (dwgTitle, dwgDescription) VALUES (:dwgTitle, :dwgDescription);
-        ",
-        params! {
-            "dwgTitle" => dwgkeynum,
-        },
-    )
+    let query = "CALL UPDATE_DWGSETTING(?, ?, ?, ?)";
+    conn.exec_drop(query, (key, title, description, result))
 }
 
 pub fn delete_dwgSetting(
     conn: &mut mysql::PooledConn,
-    dwgkeynum : String,
+    keynum : String,
 ) -> mysql::error::Result<()> {
-    conn.exec_drop(
-        r"
-        INSERT INTO `drawingautomation`.`DwgSetting` (dwgTitle, dwgDescription) VALUES (:dwgTitle, :dwgDescription);
-        ",
-        params! {
-            "dwgTitle" => dwgkeynum,
-        },
-    )
+    let query = format!("CALL DELETE_DWGSETTING({})", keynum);
+    conn.exec_drop(query, ())
 }
 
